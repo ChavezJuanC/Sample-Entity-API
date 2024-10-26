@@ -1,6 +1,7 @@
 using api.Data;
 using api.Dtos;
 using api.Interfaces;
+using api.Mappers;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,12 +17,12 @@ namespace api.Repository
         }
         public async Task<List<StockModel>> GetAllAsync()
         {
-            return await _context.Stocks.ToListAsync();
+            return await _context.Stocks.Include(stock => stock.Comments).ToListAsync();
         }
 
         public async Task<StockModel?> FindStockByIdAsync(int id)
         {
-            return await _context.Stocks.FindAsync(id);
+            return await _context.Stocks.Include(stock => stock.Comments).FirstOrDefaultAsync(stock => stock.Id == id);
         }
 
         public async Task<StockModel> CreateStockAsync(StockModel model)

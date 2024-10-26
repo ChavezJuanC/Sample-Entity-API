@@ -1,5 +1,6 @@
 using api.Data;
 using api.Interfaces;
+using api.Mappers;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,21 @@ namespace api.Repositories
         }
         public async Task<List<CommentModel>> GetAllAsync()
         {
-            return await _context.Comments.ToListAsync();
+            var comments = await _context.Comments.ToListAsync();
+
+            return (comments);
+        }
+
+        public async Task<CommentModel?> GetCommentByIdAsync(int id)
+        {
+            var comment = await _context.Comments.FirstOrDefaultAsync(comment => comment.Id == id);
+
+            if (comment == null)
+            {
+                return null;
+            }
+
+            return comment;
         }
     }
 }

@@ -1,4 +1,5 @@
 using api.Interfaces;
+using api.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Contollers
@@ -17,7 +18,21 @@ namespace api.Contollers
         public async Task<IActionResult> GetAllComments()
         {
             var commets = await _repo.GetAllAsync();
-            return Ok(commets);
+            var commentDtos = commets.Select(comment => comment.CommentToDto());
+            return Ok(commentDtos);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCommentById([FromRoute] int id)
+        {
+            var comment = await _repo.GetCommentByIdAsync(id);
+
+            if (comment == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(comment.CommentToDto());
         }
 
     }
