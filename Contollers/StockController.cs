@@ -33,7 +33,7 @@ namespace api.Contollers
 
             if (stock == null)
             {
-                return NotFound();
+                return NotFound("Sotck Not Found");
             }
 
             return Ok(stock.StockToDto());
@@ -57,7 +57,7 @@ namespace api.Contollers
 
             if (stock == null)
             {
-                return NotFound();
+                return NotFound("Stock Not Found");
             }
 
             return NoContent();
@@ -71,7 +71,7 @@ namespace api.Contollers
 
             if (stock == null)
             {
-                return NotFound();
+                return NotFound("Stock Not Found");
             }
 
             return Ok(stock.StockToDto());

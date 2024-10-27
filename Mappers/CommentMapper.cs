@@ -12,7 +12,16 @@ namespace api.Mappers
                 Id = Comment.Id,
                 Title = Comment.Title,
                 Content = Comment.Content,
-                CreatedOn = Comment.CreatedOn,
+                StockId = Comment.StockId
+            };
+        }
+
+        public static CommentModel DtoToComment(this CreateCommentRequestDto Comment)
+        {
+            return new CommentModel
+            {
+                Title = Comment.Title,
+                Content = Comment.Content,
                 StockId = Comment.StockId
             };
         }

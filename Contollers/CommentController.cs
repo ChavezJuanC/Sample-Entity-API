@@ -1,3 +1,4 @@
+using api.Dtos.CommentDtos;
 using api.Interfaces;
 using api.Mappers;
 using Microsoft.AspNetCore.Mvc;
@@ -29,11 +30,56 @@ namespace api.Contollers
 
             if (comment == null)
             {
-                return NotFound();
+                return NotFound("Comment Not Found");
             }
 
             return Ok(comment.CommentToDto());
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PostCommentToStock([FromBody] CreateCommentRequestDto commentDto)
+        {
+            int StockId = commentDto.StockId;
+            var comment = commentDto.DtoToComment();
+
+            var commentModel = await _repo.CreateCommentAsync(StockId, comment);
+
+            if (commentModel == null)
+            {
+                return BadRequest("Stock doest not exist");
+            }
+
+            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment.CommentToDto());
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteCommmentById([FromRoute] int id)
+        {
+            var comment = await _repo.DeleteCommentAsync(id);
+
+            if (comment == null)
+            {
+                return NotFound("Comment Does Not Exists");
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> UpdateComment([FromRoute] int id, CommentUpdateRequestDto commentDto)
+        {
+            var comment = await _repo.UpdateCommentAsync(id, commentDto);
+
+            if (comment == null)
+            {
+                return NotFound("Comment Does Not Exists");
+            }
+
+            return Ok(comment.CommentToDto());
+        }
+
 
     }
 }
