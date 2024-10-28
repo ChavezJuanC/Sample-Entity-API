@@ -23,7 +23,7 @@ namespace api.Contollers
             return Ok(commentDtos);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCommentById([FromRoute] int id)
         {
             var comment = await _repo.GetCommentByIdAsync(id);
@@ -37,10 +37,15 @@ namespace api.Contollers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostCommentToStock([FromBody] CreateCommentRequestDto commentDto)
+        [Route("{StockId:int}")]
+        public async Task<IActionResult> PostCommentToStock([FromBody] CreateCommentRequestDto commentDto, [FromRoute] int StockId)
         {
-            int StockId = commentDto.StockId;
-            var comment = commentDto.DtoToComment();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var comment = commentDto.DtoToCommentFromCreate(StockId);
 
             var commentModel = await _repo.CreateCommentAsync(StockId, comment);
 
@@ -49,11 +54,11 @@ namespace api.Contollers
                 return BadRequest("Stock doest not exist");
             }
 
-            return CreatedAtAction(nameof(GetCommentById), new { id = comment.Id }, comment.CommentToDto());
+            return CreatedAtAction(nameof(GetCommentById), new { id = commentModel.Id }, comment.CommentToDto());
         }
 
         [HttpDelete]
-        [Route("{id}")]
+        [Route("{id:int}")]
         public async Task<IActionResult> DeleteCommmentById([FromRoute] int id)
         {
             var comment = await _repo.DeleteCommentAsync(id);
@@ -67,9 +72,14 @@ namespace api.Contollers
         }
 
         [HttpPut]
-        [Route("{id}")]
-        public async Task<IActionResult> UpdateComment([FromRoute] int id, CommentUpdateRequestDto commentDto)
+        [Route("{id:int}")]
+        public async Task<IActionResult> UpdateComment([FromRoute] int id, [FromBody] CommentUpdateRequestDto commentDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var comment = await _repo.UpdateCommentAsync(id, commentDto);
 
             if (comment == null)
@@ -79,7 +89,6 @@ namespace api.Contollers
 
             return Ok(comment.CommentToDto());
         }
-
 
     }
 }
