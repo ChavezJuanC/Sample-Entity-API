@@ -2,7 +2,10 @@ using api.Data;
 using api.Dtos;
 using api.Interfaces;
 using api.Mappers;
+using api.Models;
+using api.QueryObjects;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace api.Contollers
 {
@@ -19,10 +22,15 @@ namespace api.Contollers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] StockQueries stockQueries)
         {
-            var stock = await _stock_repo.GetAllAsync();
-            var stockDtos = stock.Select(s => s.StockToDto());
+            var stocks = await _stock_repo.GetAllAsync(stockQueries);
+
+            if (stocks.Count == 0)
+            {
+                return NotFound("Stocks Not Found");
+            }
+            var stockDtos = stocks.Select(stock => stock.StockToDto());
             return Ok(stockDtos);
         }
 
@@ -33,7 +41,7 @@ namespace api.Contollers
 
             if (stock == null)
             {
-                return NotFound("Sotck Not Found");
+                return NotFound("Stock Not Found");
             }
 
             return Ok(stock.StockToDto());
