@@ -1,3 +1,4 @@
+using System.Data.SqlTypes;
 using api.Data;
 using api.Dtos;
 using api.Interfaces;
@@ -28,6 +29,19 @@ namespace api.Repository
             if (!string.IsNullOrWhiteSpace(stockQueries.CompanyName))
             {
                 stocks = stocks.Where(stock => stock.CompanyName.Contains(stockQueries.CompanyName));
+            }
+
+            if (!String.IsNullOrWhiteSpace(stockQueries.SortBy))
+            {
+                if (stockQueries.SortBy.Equals("Symbol", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = stockQueries.IsDescending ? stocks.OrderByDescending(stock => stock.Symbol) : stocks.OrderBy(stock => stock.Symbol);
+                }
+
+                if (stockQueries.SortBy.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
+                {
+                    stocks = stockQueries.IsDescending ? stocks.OrderByDescending(stock => stock.CompanyName) : stocks.OrderBy(stock => stock.CompanyName);
+                }
             }
 
             return await stocks.ToListAsync();
