@@ -44,7 +44,9 @@ namespace api.Repository
                 }
             }
 
-            return await stocks.ToListAsync();
+            var skipNum = (stockQueries.PageNumber - 1) * stockQueries.PageLength;
+
+            return await stocks.Skip(skipNum).Take(stockQueries.PageLength).ToListAsync();
         }
 
         public async Task<StockModel?> FindStockByIdAsync(int id)
