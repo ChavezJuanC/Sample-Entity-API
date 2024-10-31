@@ -29,6 +29,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options => options.Serialize
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
+//Identity Service
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -39,6 +40,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 }
 ).AddEntityFrameworkStores<ApplicationDBContext>();
 
+//Auth Service
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme =
