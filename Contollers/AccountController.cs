@@ -1,4 +1,5 @@
 using api.Dtos.User;
+using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,14 @@ namespace api.Contollers
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
+        private readonly ITokenService _tokenService;
+
         // Single constructor for dependency injection
-        public AccountController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ITokenService tokenService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _tokenService = tokenService;
         }
 
         [HttpPost("register")]
@@ -50,7 +54,12 @@ namespace api.Contollers
                         return BadRequest(applyRoleResult.Errors);
                     }
 
-                    return Ok("User Created");
+                    return Ok(new NewUserDto
+                    {
+                        Email = appUser.Email == null ? "" : appUser.Email,
+                        UserName = appUser.UserName == null ? "" : appUser.UserName,
+                        Token = _tokenService.CreateToken(appUser)
+                    });
                 }
                 else
                 {

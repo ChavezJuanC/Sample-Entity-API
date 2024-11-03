@@ -3,6 +3,7 @@ using api.Interfaces;
 using api.Models;
 using api.Repositories;
 using api.Repository;
+using api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options => options.Serialize
 
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 //Identity Service
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
@@ -52,7 +54,7 @@ builder.Services.AddAuthentication(options =>
 
 }).AddJwtBearer(options =>
 {
-    var SigninKey = builder.Configuration["JWT:SigninKey"];
+    var SigninKey = builder.Configuration["JWT:SigningKey"];
 
     if (string.IsNullOrEmpty(SigninKey))
     {
