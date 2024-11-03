@@ -3,6 +3,7 @@ using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Contollers
 {
@@ -11,16 +12,16 @@ namespace api.Contollers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly SignInManager<AppUser> _signingManager;
 
         private readonly ITokenService _tokenService;
 
         // Single constructor for dependency injection
-        public AccountController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, ITokenService tokenService)
+        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, SignInManager<AppUser> signInManager)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _tokenService = tokenService;
+            _signingManager = signInManager;
         }
 
         [HttpPost("register")]
@@ -72,6 +73,39 @@ namespace api.Contollers
             {
                 return StatusCode(500, $"Internal server error: {e.Message}");
             }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LogIn(LogInDto logInDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var foundUser = await _userManager.Users.FirstOrDefaultAsync(usr => usr.UserName == logInDto.UserName);
+
+            if (foundUser == null)
+            {
+                return Unauthorized("UserName or Password Incorrect");
+            }
+
+            var passwordCheck = _signingManager.CheckPasswordSignInAsync(foundUser, logInDto.Password, false);
+
+            if (!passwordCheck.IsCompletedSuccessfully)
+            {
+                return Unauthorized("UserName or Password Incorrect");
+            }
+
+            string userName = foundUser.UserName == null ? "" : foundUser.UserName;
+            string email = foundUser.Email == null ? "" : foundUser.Email;
+
+            return Ok(new LoggedInUserDto
+            {
+                UserName = userName,
+                Email = email,
+                Token = _tokenService.CreateToken(foundUser)
+            });
         }
     }
 }
