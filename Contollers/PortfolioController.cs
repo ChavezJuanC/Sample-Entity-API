@@ -55,9 +55,9 @@ namespace api.Contollers
                 return NotFound("Stock Not Found");
             }
 
-            List<StockModel> userStocks = await _portfolioRepository.GetUserPortfolioAsync(appUser);
+            List<StockModel>? userStocks = await _portfolioRepository.GetUserPortfolioAsync(appUser);
 
-            if (userStocks.Any(stock => string.Equals(stock.Symbol.ToLower(), symbol.ToLower())))
+            if (userStocks != null && userStocks.Any(stock => string.Equals(stock.Symbol.ToLower(), symbol.ToLower())))
             {
                 return BadRequest("Cannot Create Duplicate");
             }
@@ -77,5 +77,44 @@ namespace api.Contollers
 
             return Created();
         }
+
+        [HttpDelete]
+        [Authorize]
+        public async Task<IActionResult> DeleteStockPortfolio(string Symbol)
+        {
+            string? userName = User.GetUserName();
+            AppUser? appUser = await _userManager.FindByNameAsync(userName);
+
+            if (appUser == null)
+            {
+                return Unauthorized();
+            }
+
+            List<StockModel>? portfolioStocks = await _portfolioRepository.GetUserPortfolioAsync(appUser);
+
+            if (portfolioStocks == null)
+            {
+                return NotFound("Could not find portfolio");
+            }
+
+            List<StockModel>? filteredStocks = portfolioStocks.Where(portfolio => string.Equals(portfolio.Symbol.ToLower(), Symbol.ToLower())).ToList();
+
+            if (filteredStocks.Count >= 1)
+            {
+                await _portfolioRepository.DeletePortfolioAsync(appUser, Symbol);
+            }
+            else
+            {
+                return BadRequest("Could not find stock");
+            }
+
+            return Ok("Stock Portfolio Deleted");
+        }
     }
 }
+
+/*"Many to Many" relationship ->  
+Each Portfolio links one user to one stock, but by querying the Portfolios table
+and filtering by AppUserId, you’re effectively gathering all stocks that the user
+has in their portfolio. So while each Portfolio is specific to a user-stock pair,
+when combined, they enable many stocks per user (and many users per stock in the database as a whole)*/

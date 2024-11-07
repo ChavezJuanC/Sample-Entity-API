@@ -12,7 +12,7 @@ namespace api.Repositories
         {
             _context = context;
         }
-        public async Task<List<StockModel>> GetUserPortfolioAsync(AppUser user)
+        public async Task<List<StockModel>?> GetUserPortfolioAsync(AppUser user)
         {
             return await _context.Portfolios
                 .Where(port => port.AppUserId == user.Id)
@@ -31,6 +31,23 @@ namespace api.Repositories
         public async Task<Portfolio> CreatePortfolioAsync(Portfolio portfolio)
         {
             await _context.Portfolios.AddAsync(portfolio);
+            await _context.SaveChangesAsync();
+
+            return portfolio;
+        }
+
+        public async Task<Portfolio?> DeletePortfolioAsync(AppUser appUser, string Symbol)
+        {
+            Portfolio? portfolio = await _context.Portfolios.FirstOrDefaultAsync(port =>
+            string.Equals(port.AppUserId, appUser.Id) && string.Equals(Symbol.ToLower(), port.Stock != null ?
+            port.Stock.Symbol.ToLower() : string.Empty));
+
+            if (portfolio == null)
+            {
+                return null;
+            }
+
+            _context.Portfolios.Remove(portfolio);
             await _context.SaveChangesAsync();
 
             return portfolio;
