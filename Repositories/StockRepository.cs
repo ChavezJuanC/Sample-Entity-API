@@ -100,5 +100,11 @@ namespace api.Repository
 
         }
 
+        public async Task<StockModel?> FindStockBySymbolAsync(string symbol)
+        {
+            var stock = await _context.Stocks.FirstOrDefaultAsync(stock => stock.Symbol.ToLower() == symbol.ToLower());
+            return stock;
+        }
+
     }
 }

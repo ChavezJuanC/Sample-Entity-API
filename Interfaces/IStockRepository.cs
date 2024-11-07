@@ -8,6 +8,7 @@ namespace api.Interfaces
     {
         Task<List<StockModel>> GetAllAsync(StockQueries stockQueries);
         Task<StockModel?> FindStockByIdAsync(int id);
+        Task<StockModel?> FindStockBySymbolAsync(string symbol);
         Task<StockModel> CreateStockAsync(StockModel model);
         Task<StockModel?> DeleteStockAsync(int id);
         Task<StockModel?> UpdateStockAsync(int id, UpdateStockRequestDto stockDto);

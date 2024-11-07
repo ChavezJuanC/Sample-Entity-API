@@ -18,14 +18,22 @@ namespace api.Repositories
                 .Where(port => port.AppUserId == user.Id)
                 .Select(port => new StockModel
                 {
-                    Id = port.Stock.Id,
-                    Symbol = port.Stock.Symbol,
-                    Purchase = port.Stock.Purchase,
-                    LastDiv = port.Stock.LastDiv,
-                    Industry = port.Stock.Industry,
-                    MarketCap = port.Stock.MarketCap,
+                    Id = port.Stock != null ? port.Stock.Id : 0,
+                    Symbol = port.Stock != null ? port.Stock.Symbol : string.Empty,
+                    Purchase = port.Stock != null ? port.Stock.Purchase : 0,
+                    LastDiv = port.Stock != null ? port.Stock.LastDiv : 0,
+                    Industry = port.Stock != null ? port.Stock.Industry : string.Empty,
+                    MarketCap = port.Stock != null ? port.Stock.MarketCap : 0,
                 })
                 .ToListAsync();
+        }
+
+        public async Task<Portfolio> CreatePortfolioAsync(Portfolio portfolio)
+        {
+            await _context.Portfolios.AddAsync(portfolio);
+            await _context.SaveChangesAsync();
+
+            return portfolio;
         }
     }
 }

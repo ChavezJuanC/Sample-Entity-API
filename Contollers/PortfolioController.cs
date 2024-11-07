@@ -36,5 +36,46 @@ namespace api.Contollers
             return Ok(userPortfolio);
 
         }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddPortfolio(string symbol)
+        {
+            string userName = User.GetUserName();
+            AppUser? appUser = await _userManager.FindByNameAsync(userName);
+            StockModel? stock = await _stockRepository.FindStockBySymbolAsync(symbol);
+
+            if (appUser == null)
+            {
+                return Unauthorized();
+            }
+
+            if (stock == null)
+            {
+                return NotFound("Stock Not Found");
+            }
+
+            List<StockModel> userStocks = await _portfolioRepository.GetUserPortfolioAsync(appUser);
+
+            if (userStocks.Any(stock => string.Equals(stock.Symbol.ToLower(), symbol.ToLower())))
+            {
+                return BadRequest("Cannot Create Duplicate");
+            }
+
+            Portfolio newPortfolio = new Portfolio
+            {
+                AppUserId = appUser.Id,
+                StockId = stock.Id,
+            };
+
+            await _portfolioRepository.CreatePortfolioAsync(newPortfolio);
+
+            if (newPortfolio == null)
+            {
+                return BadRequest("Could not create");
+            }
+
+            return Created();
+        }
     }
 }
