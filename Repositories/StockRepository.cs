@@ -19,7 +19,7 @@ namespace api.Repository
         }
         public async Task<List<StockModel>> GetAllAsync(StockQueries stockQueries)
         {
-            var stocks = _context.Stocks.Include(stock => stock.Comments).AsQueryable();
+            var stocks = _context.Stocks.Include(stock => stock.Comments).ThenInclude(comment => comment.User).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(stockQueries.Symbol))
             {
@@ -51,7 +51,7 @@ namespace api.Repository
 
         public async Task<StockModel?> FindStockByIdAsync(int id)
         {
-            return await _context.Stocks.Include(stock => stock.Comments).FirstOrDefaultAsync(stock => stock.Id == id);
+            return await _context.Stocks.Include(stock => stock.Comments).ThenInclude(comment => comment.User).FirstOrDefaultAsync(stock => stock.Id == id);
         }
 
         public async Task<StockModel> CreateStockAsync(StockModel model)

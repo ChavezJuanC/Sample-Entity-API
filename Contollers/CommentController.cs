@@ -1,6 +1,11 @@
+using System.Runtime.CompilerServices;
 using api.Dtos.CommentDtos;
+using api.Extensions;
 using api.Interfaces;
 using api.Mappers;
+using api.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace api.Contollers
@@ -9,16 +14,19 @@ namespace api.Contollers
     [ApiController]
     public class CommentController : ControllerBase
     {
-        private readonly ICommentRepository _repo;
-        public CommentController(ICommentRepository repo)
+        private readonly ICommentRepository _commentRepository;
+        private readonly UserManager<AppUser> _userManager;
+
+        public CommentController(ICommentRepository repo, UserManager<AppUser> userManager)
         {
-            _repo = repo;
+            _commentRepository = repo;
+            _userManager = userManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllComments()
         {
-            var commets = await _repo.GetAllAsync();
+            var commets = await _commentRepository.GetAllAsync();
             var commentDtos = commets.Select(comment => comment.CommentToDto());
             return Ok(commentDtos);
         }
@@ -26,7 +34,7 @@ namespace api.Contollers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetCommentById([FromRoute] int id)
         {
-            var comment = await _repo.GetCommentByIdAsync(id);
+            var comment = await _commentRepository.GetCommentByIdAsync(id);
 
             if (comment == null)
             {
@@ -38,6 +46,7 @@ namespace api.Contollers
 
         [HttpPost]
         [Route("{StockId:int}")]
+        [Authorize]
         public async Task<IActionResult> PostCommentToStock([FromBody] CreateCommentRequestDto commentDto, [FromRoute] int StockId)
         {
             if (!ModelState.IsValid)
@@ -45,9 +54,19 @@ namespace api.Contollers
                 return BadRequest(ModelState);
             }
 
-            var comment = commentDto.DtoToCommentFromCreate(StockId);
+            string? userName = User.GetUserName();
+            AppUser? appUser = await _userManager.FindByNameAsync(userName);
 
-            var commentModel = await _repo.CreateCommentAsync(StockId, comment);
+            var comment = commentDto.DtoToCommentFromCreate(StockId);
+            comment.AppUserId = appUser?.Id ?? string.Empty;
+
+            var commentModel = await _commentRepository.CreateCommentAsync(StockId, comment);
+
+            if (commentModel == null)
+            {
+                return BadRequest("Issue with comment");
+            }
+
 
             if (commentModel == null)
             {
@@ -61,7 +80,7 @@ namespace api.Contollers
         [Route("{id:int}")]
         public async Task<IActionResult> DeleteCommmentById([FromRoute] int id)
         {
-            var comment = await _repo.DeleteCommentAsync(id);
+            var comment = await _commentRepository.DeleteCommentAsync(id);
 
             if (comment == null)
             {
@@ -80,7 +99,7 @@ namespace api.Contollers
                 return BadRequest(ModelState);
             }
 
-            var comment = await _repo.UpdateCommentAsync(id, commentDto);
+            var comment = await _commentRepository.UpdateCommentAsync(id, commentDto);
 
             if (comment == null)
             {

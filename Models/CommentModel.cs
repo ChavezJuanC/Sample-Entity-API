@@ -11,5 +11,7 @@ namespace api.Models
         public DateTime CreatedOn { get; set; }
         public int? StockId { get; set; }
         public StockModel? Stock { get; set; }
+        public string AppUserId { get; set; } = string.Empty;
+        public AppUser? User { get; set; }
     }
 }

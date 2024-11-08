@@ -51,13 +51,13 @@ namespace api.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9ec491ed-51f7-425a-a077-02336d8436b5",
+                            Id = "567ee109-6804-469a-a737-f606c075da58",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "794ead12-f5db-4049-bb55-360108cb2f78",
+                            Id = "e4517abc-cfe2-4891-aee7-5a5b837b6634",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         });
@@ -242,6 +242,10 @@ namespace api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -257,6 +261,8 @@ namespace api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AppUserId");
 
                     b.HasIndex("StockId");
 
@@ -365,11 +371,19 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Models.CommentModel", b =>
                 {
+                    b.HasOne("api.Models.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("api.Models.StockModel", "Stock")
                         .WithMany("Comments")
                         .HasForeignKey("StockId");
 
                     b.Navigation("Stock");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("api.Models.Portfolio", b =>

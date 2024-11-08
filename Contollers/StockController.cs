@@ -32,7 +32,7 @@ namespace api.Contollers
             {
                 return NotFound("Stocks Not Found");
             }
-            var stockDtos = stocks.Select(stock => stock.StockToDto());
+            var stockDtos = stocks.Select(stock => stock.StockToDto()).ToList();
             return Ok(stockDtos);
         }
 
