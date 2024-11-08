@@ -34,7 +34,6 @@ namespace api.Contollers
             var userPortfolio = await _portfolioRepository.GetUserPortfolioAsync(appUser);
 
             return Ok(userPortfolio);
-
         }
 
         [HttpPost]
